@@ -7,236 +7,372 @@
 
 <style>
 body{
-margin:0;
-overflow:hidden;
-font-family:Arial;
-background:black;
-color:white;
-text-align:center;
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  text-align:center;
+  overflow:hidden;
+  background:#000;
 }
 
 .screen{
-position:absolute;
-width:100%;
-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  transition:1s;
 }
 
-.hidden{display:none;}
+.hidden{opacity:0;pointer-events:none;}
 
 button{
-padding:12px 25px;
-font-size:18px;
-border:none;
-border-radius:25px;
-background:#ff3366;
-color:white;
-cursor:pointer;
+  padding:14px 30px;
+  font-size:20px;
+  border:none;
+  border-radius:30px;
+  background:linear-gradient(45deg,#ff3366,#ff6a88);
+  color:white;
+  cursor:pointer;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
+  font-weight:bold;
+  text-shadow:0 0 10px #fff;
 }
 
+/* FONT GLOW */
+h1,h2,h3,h4,h5,h6{
+  color:white;
+  font-weight:bold;
+  text-shadow:0 0 10px #ff99cc,0 0 20px #ff66aa;
+}
+
+/* START SCREEN */
 #startScreen{
-background:url("couple.jpg") center/cover no-repeat;
+  background:url("couple.jpg") center/cover no-repeat;
 }
 
 #overlay{
-position:absolute;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.6);
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
 }
 
-#gameCanvas{
-background:linear-gradient(#ff9a9e,#fad0c4);
-display:block;
+canvas{
+  display:block;
+}
+
+/* PUZZLE */
+#puzzleScreen{
+  background:linear-gradient(120deg,#ff9a9e,#fad0c4);
 }
 
 #puzzleBoard{
-display:grid;
-grid-template-columns:repeat(3,100px);
-gap:2px;
+  display:grid;
+  grid-template-columns:repeat(2,160px);
+  grid-template-rows:repeat(2,160px);
+  gap:5px;
+  justify-content:center;
+  align-items:center;
+  margin-top:20px;
 }
 
 .piece{
-width:100px;
-height:100px;
-background-size:300px 300px;
+  width:160px;
+  height:160px;
+  background-size:320px 320px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.2s;
+  box-shadow:0 0 5px rgba(0,0,0,0.5);
 }
 
+.selected{
+  outline:4px solid yellow;
+  box-shadow:0 0 20px yellow;
+}
+
+/* FINAL SCREEN */
 #finalScreen{
-background:url("couple.jpg") center/cover no-repeat;
+  background:linear-gradient(135deg,#ff6a88,#ff99ac,#fad0c4);
+  overflow:hidden;
 }
 
-#finalOverlay{
-position:absolute;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.7);
+#finalContent{
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  padding:30px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  text-shadow:0 0 10px #fff;
+}
+
+/* FLOATING HEARTS */
+.floating{
+  position:absolute;
+  font-size:24px;
+  animation:float 5s linear infinite;
+}
+
+@keyframes float{
+  0%{transform:translateY(100vh);opacity:1;}
+  100%{transform:translateY(-10vh);opacity:0;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- BGM -->
-<audio id="bgm" loop>
-<source src="bgm.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgm" loop src="bgm.mp3"></audio>
+<audio id="catchSound" src="catch.mp3"></audio>
 
 <!-- START -->
 <div id="startScreen" class="screen">
-<div id="overlay"></div>
-<div style="z-index:2">
-<h1>Fahim ❤️ Areen</h1>
-<button onclick="startGame()">Start Our Love Journey</button>
-</div>
+  <div id="overlay"></div>
+  <div style="z-index:2">
+    <h1>Fahim ❤️ Areen</h1>
+    <button onclick="startGame()">Start Our Love Journey</button>
+  </div>
 </div>
 
 <!-- GAME -->
-<canvas id="gameCanvas" class="hidden"></canvas>
+<canvas id="gameCanvas" class="screen hidden"></canvas>
 
 <!-- PUZZLE -->
 <div id="puzzleScreen" class="screen hidden">
-<h2>Complete Our Memory 💕</h2>
-<div id="puzzleBoard"></div>
+  <h2>Arrange Our Memory 💕</h2>
+  <div id="puzzleBoard"></div>
 </div>
 
 <!-- FINAL -->
 <div id="finalScreen" class="screen hidden">
-<div id="finalOverlay"></div>
-<div style="z-index:2;max-width:80%">
-<h2>Areen 💖</h2>
-<p>I don't want a perfect love story.<br>
-I just want you. Forever.<br><br>
-– Fahim ❤️</p>
+  <div id="finalContent">
+    <h2 id="typing"></h2>
+    <br>
+    <button onclick="showRing()">💍 Open Ring</button>
+  </div>
 </div>
-</div>
+
+<canvas id="fireworksCanvas" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
 
 <script>
-
+/* ---------- GAME ---------- */
 let canvas=document.getElementById("gameCanvas");
 let ctx=canvas.getContext("2d");
-let playerImg=new Image();
-playerImg.src="fahim.png";
+let fwCanvas=document.getElementById("fireworksCanvas");
+let fwCtx=fwCanvas.getContext("2d");
 
+let player=new Image();
+player.src="fahim.png";
+
+let emojis=["💖","💘","💗","💝","💕","💞"];
 let hearts=[];
 let score=0;
 let playerX=0;
-let animationId;
 
-function resizeCanvas(){
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-playerX=canvas.width/2-40;
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  fwCanvas.width=window.innerWidth;
+  fwCanvas.height=window.innerHeight;
+  playerX=canvas.width/2-40;
 }
-window.addEventListener("resize",resizeCanvas);
+window.addEventListener("resize",resize);
 
 function startGame(){
-document.getElementById("startScreen").classList.add("hidden");
-canvas.classList.remove("hidden");
-
-resizeCanvas();
-
-let music=document.getElementById("bgm");
-music.volume=0.6;
-music.play().catch(()=>{});
-
-score=0;
-hearts=[];
-playerImg.onload=function(){
-gameLoop();
-}
+  document.getElementById("startScreen").classList.add("hidden");
+  canvas.classList.remove("hidden");
+  resize();
+  score=0;
+  hearts=[];
+  heartInterval=setInterval(spawnHeart,600);
+  document.getElementById("bgm").play().catch(()=>{});
+  gameLoop();
 }
 
 function spawnHeart(){
-hearts.push({
-x:Math.random()*canvas.width,
-y:-20,
-speed:2+Math.random()*3
-});
+  hearts.push({
+    x:Math.random()*(canvas.width-50),
+    y:-20,
+    speed:2+Math.random()*2,
+    emoji:emojis[Math.floor(Math.random()*emojis.length)],
+    color:`hsl(${Math.random()*360},100%,75%)`
+  });
 }
-setInterval(spawnHeart,800);
+
+let heartInterval;
 
 function gameLoop(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
+  // gradient background
+  let grad=ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,"#ff9a9e");
+  grad.addColorStop(1,"#fad0c4");
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-ctx.drawImage(playerImg,playerX,canvas.height-100,80,80);
+  ctx.drawImage(player,playerX,canvas.height-100,80,80);
 
-for(let i=hearts.length-1;i>=0;i--){
-let h=hearts[i];
-h.y+=h.speed;
+  for(let i=hearts.length-1;i>=0;i--){
+    let h=hearts[i];
+    h.y+=h.speed;
+    ctx.font="32px Arial";
+    ctx.fillStyle=h.color;
+    ctx.fillText(h.emoji,h.x,h.y);
 
-ctx.fillStyle="red";
-ctx.beginPath();
-ctx.arc(h.x,h.y,10,0,Math.PI*2);
-ctx.fill();
+    if(h.y>canvas.height-110 && h.x>playerX && h.x<playerX+80){
+      score++;
+      hearts.splice(i,1);
+      document.getElementById("catchSound").play();
+    }
 
-if(h.y>canvas.height-100 && 
-h.x>playerX && 
-h.x<playerX+80){
-score++;
-hearts.splice(i,1);
-}
+    if(h.y>canvas.height) hearts.splice(i,1);
+  }
 
-if(h.y>canvas.height){
-hearts.splice(i,1);
-}
-}
+  ctx.fillStyle="white";
+  ctx.font="28px Arial";
+  ctx.shadowColor="pink";
+  ctx.shadowBlur=10;
+  ctx.fillText("Love: "+score,20,40);
 
-ctx.fillStyle="black";
-ctx.font="20px Arial";
-ctx.fillText("Score: "+score,20,30);
+  if(score>=10){
+    clearInterval(heartInterval);
+    canvas.classList.add("hidden");
+    startPuzzle();
+    return;
+  }
 
-if(score>=10){
-cancelAnimationFrame(animationId);
-canvas.classList.add("hidden");
-startPuzzle();
-return;
-}
-
-animationId=requestAnimationFrame(gameLoop);
+  requestAnimationFrame(gameLoop);
 }
 
 document.addEventListener("mousemove",e=>{
-playerX=e.clientX-40;
-if(playerX<0)playerX=0;
-if(playerX>canvas.width-80)playerX=canvas.width-80;
+  playerX=e.clientX-40;
 });
 
-document.addEventListener("touchmove",e=>{
-playerX=e.touches[0].clientX-40;
-if(playerX<0)playerX=0;
-if(playerX>canvas.width-80)playerX=canvas.width-80;
-});
+/* ---------- 4-PIECE PUZZLE FIX ---------- */
+let puzzleBoard=document.getElementById("puzzleBoard");
+let firstPiece=null;
+let puzzleOrder=[0,1,2,3]; // correct order
 
-/* PUZZLE */
+function shuffleArray(array){
+  for(let i=array.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
+    [array[i], array[j]]=[array[j], array[i]];
+  }
+}
 
 function startPuzzle(){
-document.getElementById("puzzleScreen").classList.remove("hidden");
-let board=document.getElementById("puzzleBoard");
-board.innerHTML="";
+  document.getElementById("puzzleScreen").classList.remove("hidden");
+  puzzleBoard.innerHTML="";
+  let shuffled=[0,1,2,3];
+  shuffleArray(shuffled);
+  puzzleBoard.dataset.order = shuffled.join(",");
 
-let positions=[0,1,2,3,4,5,6,7,8];
-positions.sort(()=>Math.random()-0.5);
-
-positions.forEach(pos=>{
-let piece=document.createElement("div");
-piece.className="piece";
-piece.style.backgroundImage="url('puzzle.jpg')";
-piece.style.backgroundPosition=
-(- (pos%3)*100)+"px "+(-Math.floor(pos/3)*100)+"px";
-board.appendChild(piece);
-});
-
-board.onclick=function(){
-document.getElementById("puzzleScreen").classList.add("hidden");
-document.getElementById("finalScreen").classList.remove("hidden");
-}
+  shuffled.forEach((num,index)=>{
+    let div=document.createElement("div");
+    div.className="piece";
+    div.style.backgroundImage="url('puzzle.jpg')";
+    div.style.backgroundPosition=(-(num%2)*160)+"px "+(-Math.floor(num/2)*160)+"px";
+    div.dataset.pos=index;
+    div.dataset.correct=num;
+    div.addEventListener("click",()=>selectPiece(div));
+    puzzleBoard.appendChild(div);
+  });
 }
 
+function selectPiece(piece){
+  if(!firstPiece){
+    firstPiece=piece;
+    piece.classList.add("selected");
+  } else {
+    swapPieces(firstPiece, piece);
+    firstPiece.classList.remove("selected");
+    firstPiece=null;
+    checkWin();
+  }
+}
+
+function swapPieces(a,b){
+  let order=puzzleBoard.dataset.order.split(",").map(Number);
+  let aPos=Number(a.dataset.pos);
+  let bPos=Number(b.dataset.pos);
+
+  [order[aPos],order[bPos]]=[order[bPos],order[aPos]];
+
+  // update dataset and positions
+  a.dataset.pos=bPos;
+  b.dataset.pos=aPos;
+  puzzleBoard.dataset.order = order.join(",");
+
+  Array.from(puzzleBoard.children).forEach(div=>{
+    let pos=Number(div.dataset.pos);
+    let num=order[pos];
+    div.style.backgroundPosition=(-(num%2)*160)+"px "+(-Math.floor(num/2)*160)+"px";
+  });
+}
+
+function checkWin(){
+  let current=puzzleBoard.dataset.order.split(",").map(Number);
+  let won=current.every((val,index)=>val===index);
+  if(won){
+    document.getElementById("puzzleScreen").classList.add("hidden");
+    showFinal();
+  }
+}
+
+/* ---------- FINAL ---------- */
+function showFinal(){
+  document.getElementById("finalScreen").classList.remove("hidden");
+  typingEffect();
+  floatingHearts();
+}
+
+function typingEffect(){
+  let text="Areen 💖\nYou are my today & all of my tomorrows.\nWill you stay forever?\n– Fahim ❤️";
+  let i=0;
+  let target=document.getElementById("typing");
+  target.innerHTML="";
+  function type(){
+    if(i<text.length){
+      target.innerHTML += text[i]=="\n"?"<br>":text[i];
+      i++;
+      setTimeout(type,40);
+    }
+  }
+  type();
+}
+
+/* ---------- RING + FIREWORK ---------- */
+function showRing(){
+  document.getElementById("typing").innerHTML="💍 She Said YES! 💖";
+  launchFireworks();
+  floatingHearts();
+}
+
+function launchFireworks(){
+  for(let i=0;i<100;i++){
+    setTimeout(()=>{
+      fwCtx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
+      fwCtx.beginPath();
+      fwCtx.arc(Math.random()*fwCanvas.width,
+      Math.random()*fwCanvas.height,3,0,Math.PI*2);
+      fwCtx.fill();
+    },i*20);
+  }
+  setTimeout(()=>fwCtx.clearRect(0,0,fwCanvas.width,0,fwCanvas.height),3000);
+}
+
+function floatingHearts(){
+  for(let i=0;i<25;i++){
+    let heart=document.createElement("div");
+    heart.className="floating";
+    heart.style.left=Math.random()*100+"vw";
+    heart.style.color=`hsl(${Math.random()*360},100%,75%)`;
+    heart.innerHTML="❤️";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),5000);
+  }
+}
 </script>
-
 </body>
 </html>
