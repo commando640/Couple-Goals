@@ -1,393 +1,147 @@
+```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahim ❤️ Areen</title>
-
-<style>
-body{
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  text-align:center;
-  overflow:hidden;
-  background:#000;
-  touch-action: none;
-}
-
-.screen{
-  position:absolute;
-  width:100%;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  transition:1s;
-}
-
-.hidden{opacity:0;pointer-events:none;}
-
-button{
-  padding:14px 30px;
-  font-size:20px;
-  border:none;
-  border-radius:30px;
-  background:linear-gradient(45deg,#ff3366,#ff6a88);
-  color:white;
-  cursor:pointer;
-  box-shadow:0 5px 15px rgba(0,0,0,0.4);
-  font-weight:bold;
-  text-shadow:0 0 10px #fff;
-}
-
-/* FONT GLOW */
-h1,h2,h3,h4,h5,h6{
-  color:white;
-  font-weight:bold;
-  text-shadow:0 0 10px #ff99cc,0 0 20px #ff66aa;
-}
-
-/* START SCREEN */
-#startScreen{
-  background:url("couple.jpg") center/cover no-repeat;
-}
-
-#overlay{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-}
-
-canvas{
-  display:block;
-}
-
-/* PUZZLE */
-#puzzleScreen{
-  background:linear-gradient(120deg,#ff9a9e,#fad0c4);
-}
-
-#puzzleBoard{
-  display:grid;
-  grid-template-columns:repeat(2,160px);
-  grid-template-rows:repeat(2,160px);
-  gap:5px;
-  justify-content:center;
-  align-items:center;
-  margin-top:20px;
-}
-
-.piece{
-  width:160px;
-  height:160px;
-  background-size:320px 320px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:0.2s;
-  box-shadow:0 0 5px rgba(0,0,0,0.5);
-}
-
-.selected{
-  outline:4px solid yellow;
-  box-shadow:0 0 20px yellow;
-}
-
-/* FINAL SCREEN */
-#finalScreen{
-  background:linear-gradient(135deg,#ff6a88,#ff99ac,#fad0c4);
-  overflow:hidden;
-}
-
-#finalContent{
-  background:rgba(255,255,255,0.15);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3);
-  text-shadow:0 0 10px #fff;
-}
-
-/* FLOATING HEARTS */
-.floating{
-  position:absolute;
-  font-size:24px;
-  animation:float 5s linear infinite;
-}
-
-@keyframes float{
-  0%{transform:translateY(100vh);opacity:1;}
-  100%{transform:translateY(-10vh);opacity:0;}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fahim ❤️ Areen</title>
+  <style>
+    body{margin:0;font-family:'Segoe UI',sans-serif;text-align:center;overflow:hidden;background:#000;touch-action:none;}
+    .screen{position:absolute;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:1s;}
+    .hidden{opacity:0;pointer-events:none;}
+    button{padding:14px 30px;font-size:20px;border:none;border-radius:30px;background:linear-gradient(45deg,#ff3366,#ff6a88);color:white;cursor:pointer;box-shadow:0 5px 15px rgba(0,0,0,0.4);font-weight:bold;text-shadow:0 0 10px #fff;transition:0.3s;}
+    button:hover{transform:scale(1.1);box-shadow:0 0 20px #ff3366;}
+    h1,h2{color:white;font-weight:bold;text-shadow:0 0 10px #ff99cc,0 0 20px #ff66aa;}
+    #startScreen{background:url("couple.jpg") center/cover no-repeat;}
+    #overlay{position:absolute;width:100%;height:100%;background:rgba(0,0,0,0.5);}
+    #puzzleScreen{background:linear-gradient(120deg,#ff9a9e,#fad0c4);}
+    #puzzleBoard{display:grid;grid-template-columns:repeat(2,160px);grid-template-rows:repeat(2,160px);gap:5px;margin-top:20px;}
+    .piece{width:160px;height:160px;background-size:320px 320px;border-radius:12px;cursor:pointer;box-shadow:0 0 5px rgba(0,0,0,0.5);}
+    .selected{outline:4px solid yellow;box-shadow:0 0 20px yellow;}
+    #finalScreen{background:#000;overflow:hidden;}
+    #finalContent{z-index:10;background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);padding:40px;border-radius:30px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 0 50px rgba(255,51,102,0.3);}
+    .ring-btn{font-size:50px;background:none;box-shadow:none;animation:ringGlow 2s infinite;}
+    @keyframes ringGlow{0%,100%{text-shadow:0 0 10px gold;}50%{text-shadow:0 0-30px gold, 0 0 50px white;transform:scale(1.2);}}
+    .floating{position:absolute;animation:floatUp 4s linear forwards;pointer-events:none;}
+    @keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:1;}100%{transform:translateY(-20vh) rotate(360deg);opacity:0;}}
+    #specialMsg{display:none;animation:reveal 1.5s cubic-bezier(0.175,0.885,0.32,1.275);}
+    @keyframes reveal{from{opacity:0;transform:scale(0.5) rotate(-10deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+  </style>
 </head>
-
 <body>
+  <audio id="bgm" loop src="bgm.mp3"></audio>
+  <audio id="catchSound" src="catch.mp3"></audio>
 
-<audio id="bgm" loop src="bgm.mp3"></audio>
-<audio id="catchSound" src="catch.mp3"></audio>
-
-<!-- START -->
-<div id="startScreen" class="screen">
-  <div id="overlay"></div>
-  <div style="z-index:2">
-    <h1>Fahim ❤️ Areen</h1>
-    <button onclick="startGame()">Start Our Love Journey</button>
+  <div id="startScreen" class="screen">
+    <div id="overlay"></div>
+    <div style="z-index:2">
+      <h1>Fahim ❤️ Areen</h1>
+      <button onclick="startGame()">Start Our Love Journey</button>
+    </div>
   </div>
-</div>
 
-<!-- GAME -->
-<canvas id="gameCanvas" class="screen hidden"></canvas>
+  <canvas id="gameCanvas" class="screen hidden"></canvas>
 
-<!-- PUZZLE -->
-<div id="puzzleScreen" class="screen hidden">
-  <h2>Arrange Our Memory 💕</h2>
-  <div id="puzzleBoard"></div>
-</div>
-
-<!-- FINAL -->
-<div id="finalScreen" class="screen hidden">
-  <div id="finalContent">
-    <h2 id="typing"></h2>
-    <br>
-    <button onclick="showRing()">💍 Open Ring</button>
+  <div id="puzzleScreen" class="screen hidden">
+    <h2>Arrange Our Memory 💕</h2>
+    <div id="puzzleBoard"></div>
   </div>
-</div>
 
-<canvas id="fireworksCanvas" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
+  <div id="finalScreen" class="screen hidden">
+    <canvas id="confetti" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+    <div id="finalContent">
+      <div id="preRing">
+        <h2 id="typing"></h2>
+        <button class="ring-btn" onclick="showRing()">💍</button>
+        <p style="color:white;margin-top:10px;">Click the ring to open my heart</p>
+      </div>
+      <div id="specialMsg">
+        <h1 style="font-size:3.5rem;margin:0;color:#fff;text-shadow:0 0 20px #ff007f;">YES! Forever ❤️</h1>
+        <p style="color:#ffd700;font-size:1.5rem;letter-spacing:2px;font-weight:bold;">Areen & Fahim: Together Always</p>
+        <div style="font-size:50px;margin-top:20px;">👩‍❤️‍👨✨💎</div>
+      </div>
+    </div>
+  </div>
 
-<script>
-/* ---------- GAME ---------- */
-let canvas=document.getElementById("gameCanvas");
-let ctx=canvas.getContext("2d");
-let fwCanvas=document.getElementById("fireworksCanvas");
-let fwCtx=fwCanvas.getContext("2d");
+  <script>
+    let canvas=document.getElementById("gameCanvas"), ctx=canvas.getContext("2d");
+    let player=new Image(); player.src="fahim.png";
+    let emojis=["💖","💘","💗","💝","💕"], hearts=[], score=0, playerX=0;
 
-let player=new Image();
-player.src="fahim.png";
+    function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;playerX=canvas.width/2-40;}
+    window.addEventListener("resize",resize);
 
-let emojis=["💖","💘","💗","💝","💕","💞"];
-let hearts=[];
-let score=0;
-let playerX=0;
-let isDragging=false;
-
-function resize(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  fwCanvas.width=window.innerWidth;
-  fwCanvas.height=window.innerHeight;
-  if(playerX===0) playerX=canvas.width/2-40;
-}
-window.addEventListener("resize",resize);
-
-function startGame(){
-  document.getElementById("startScreen").classList.add("hidden");
-  canvas.classList.remove("hidden");
-  resize();
-  score=0;
-  hearts=[];
-  heartInterval=setInterval(spawnHeart,600);
-  document.getElementById("bgm").play().catch(()=>{});
-  gameLoop();
-}
-
-function spawnHeart(){
-  hearts.push({
-    x:Math.random()*(canvas.width-50),
-    y:-20,
-    speed:2+Math.random()*2,
-    emoji:emojis[Math.floor(Math.random()*emojis.length)],
-    color:`hsl(${Math.random()*360},100%,75%)`
-  });
-}
-
-let heartInterval;
-
-function gameLoop(){
-  // gradient background
-  let grad=ctx.createLinearGradient(0,0,0,canvas.height);
-  grad.addColorStop(0,"#ff9a9e");
-  grad.addColorStop(1,"#fad0c4");
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  ctx.drawImage(player,playerX,canvas.height-100,80,80);
-
-  for(let i=hearts.length-1;i>=0;i--){
-    let h=hearts[i];
-    h.y+=h.speed;
-    ctx.font="32px Arial";
-    ctx.fillStyle=h.color;
-    ctx.fillText(h.emoji,h.x,h.y);
-
-    if(h.y>canvas.height-110 && h.x>playerX && h.x<playerX+80){
-      score++;
-      hearts.splice(i,1);
-      document.getElementById("catchSound").play();
+    function startGame(){
+      document.getElementById("startScreen").classList.add("hidden");
+      canvas.classList.remove("hidden");
+      resize();
+      document.getElementById("bgm").play().catch(()=>{});
+      gameLoop();
+      setInterval(()=>{if(score<10) hearts.push({x:Math.random()*(canvas.width-50),y:-20,speed:3+Math.random()*2,emoji:emojis[Math.floor(Math.random()*emojis.length)]})},600);
     }
 
-    if(h.y>canvas.height) hearts.splice(i,1);
-  }
-
-  ctx.fillStyle="white";
-  ctx.font="28px Arial";
-  ctx.shadowColor="pink";
-  ctx.shadowBlur=10;
-  ctx.fillText("Love: "+score,20,40);
-
-  if(score>=10){
-    clearInterval(heartInterval);
-    canvas.classList.add("hidden");
-    startPuzzle();
-    return;
-  }
-
-  requestAnimationFrame(gameLoop);
-}
-
-// TOUCH / DRAG SUPPORT FOR PLAYER
-canvas.addEventListener("touchstart", e=>{
-  isDragging=true;
-  playerX=e.touches[0].clientX-40;
-});
-canvas.addEventListener("touchmove", e=>{
-  if(isDragging){
-    playerX=e.touches[0].clientX-40;
-  }
-});
-canvas.addEventListener("touchend", e=>{
-  isDragging=false;
-});
-
-/* ---------- PUZZLE ---------- */
-let puzzleBoard=document.getElementById("puzzleBoard");
-let firstPiece=null;
-let puzzleOrder=[0,1,2,3];
-
-function shuffleArray(array){
-  for(let i=array.length-1;i>0;i--){
-    let j=Math.floor(Math.random()*(i+1));
-    [array[i], array[j]]=[array[j], array[i]];
-  }
-}
-
-function startPuzzle(){
-  document.getElementById("puzzleScreen").classList.remove("hidden");
-  puzzleBoard.innerHTML="";
-  let shuffled=[0,1,2,3];
-  shuffleArray(shuffled);
-  puzzleBoard.dataset.order = shuffled.join(",");
-
-  shuffled.forEach((num,index)=>{
-    let div=document.createElement("div");
-    div.className="piece";
-    div.style.backgroundImage="url('puzzle.jpg')";
-    div.style.backgroundPosition=(-(num%2)*160)+"px "+(-Math.floor(num/2)*160)+"px";
-    div.dataset.pos=index;
-    div.dataset.correct=num;
-
-    // MOBILE TOUCH SUPPORT
-    div.addEventListener("touchstart", ()=>selectPiece(div));
-    div.addEventListener("click", ()=>selectPiece(div));
-
-    puzzleBoard.appendChild(div);
-  });
-}
-
-function selectPiece(piece){
-  if(!firstPiece){
-    firstPiece=piece;
-    piece.classList.add("selected");
-  } else {
-    swapPieces(firstPiece, piece);
-    firstPiece.classList.remove("selected");
-    firstPiece=null;
-    checkWin();
-  }
-}
-
-function swapPieces(a,b){
-  let order=puzzleBoard.dataset.order.split(",").map(Number);
-  let aPos=Number(a.dataset.pos);
-  let bPos=Number(b.dataset.pos);
-
-  [order[aPos],order[bPos]]=[order[bPos],order[aPos]];
-
-  a.dataset.pos=bPos;
-  b.dataset.pos=aPos;
-  puzzleBoard.dataset.order = order.join(",");
-
-  Array.from(puzzleBoard.children).forEach(div=>{
-    let pos=Number(div.dataset.pos);
-    let num=order[pos];
-    div.style.backgroundPosition=(-(num%2)*160)+"px "+(-Math.floor(num/2)*160)+"px";
-  });
-}
-
-function checkWin(){
-  let current=puzzleBoard.dataset.order.split(",").map(Number);
-  let won=current.every((val,index)=>val===index);
-  if(won){
-    document.getElementById("puzzleScreen").classList.add("hidden");
-    showFinal();
-  }
-}
-
-/* ---------- FINAL ---------- */
-function showFinal(){
-  document.getElementById("finalScreen").classList.remove("hidden");
-  typingEffect();
-  floatingHearts();
-}
-
-function typingEffect(){
-  let text="Areen 💖\nYou are my today & all of my tomorrows.\nWill you stay forever?\n– Fahim ❤️";
-  let i=0;
-  let target=document.getElementById("typing");
-  target.innerHTML="";
-  function type(){
-    if(i<text.length){
-      target.innerHTML += text[i]=="\n"?"<br>":text[i];
-      i++;
-      setTimeout(type,40);
+    function gameLoop(){
+      ctx.fillStyle="#ff9a9e"; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(player,playerX,canvas.height-100,80,80);
+      hearts.forEach((h,i)=>{
+        h.y+=h.speed; ctx.font="32px Arial"; ctx.fillText(h.emoji,h.x,h.y);
+        if(h.y>canvas.height-110 && h.x>playerX && h.x<playerX+80){score++;hearts.splice(i,1);document.getElementById("catchSound").play();}
+      });
+      ctx.fillStyle="white"; ctx.font="28px Arial"; ctx.fillText("Love: "+score,20,40);
+      if(score>=10){canvas.classList.add("hidden");startPuzzle();} else requestAnimationFrame(gameLoop);
     }
-  }
-  type();
-}
 
-/* ---------- RING + FIREWORK ---------- */
-function showRing(){
-  document.getElementById("typing").innerHTML="💍 She Said YES! 💖";
-  launchFireworks();
-  floatingHearts();
-}
+    canvas.addEventListener("touchmove",e=>{playerX=e.touches[0].clientX-40;});
 
-function launchFireworks(){
-  for(let i=0;i<100;i++){
-    setTimeout(()=>{
-      fwCtx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
-      fwCtx.beginPath();
-      fwCtx.arc(Math.random()*fwCanvas.width,
-      Math.random()*fwCanvas.height,3,0,Math.PI*2);
-      fwCtx.fill();
-    },i*20);
-  }
-  setTimeout(()=>fwCtx.clearRect(0,0,fwCanvas.width,0,fwCanvas.height),3000);
-}
+    function startPuzzle(){
+      const pb=document.getElementById("puzzleBoard");
+      document.getElementById("puzzleScreen").classList.remove("hidden");
+      let indices=[0,1,2,3].sort(()=>Math.random()-0.5);
+      indices.forEach(n=>{
+        let d=document.createElement("div"); d.className="piece"; d.style.backgroundImage="url('puzzle.jpg')";
+        d.style.backgroundPosition=`${-(n%2)*160}px ${-Math.floor(n/2)*160}px`;
+        d.dataset.id=n; d.onclick=()=>selectPiece(d); pb.appendChild(d);
+      });
+    }
 
-function floatingHearts(){
-  for(let i=0;i<25;i++){
-    let heart=document.createElement("div");
-    heart.className="floating";
-    heart.style.left=Math.random()*100+"vw";
-    heart.style.color=`hsl(${Math.random()*360},100%,75%)`;
-    heart.innerHTML="❤️";
-    document.body.appendChild(heart);
-    setTimeout(()=>heart.remove(),5000);
-  }
-}
-</script>
+    let first=null;
+    function selectPiece(p){
+      if(!first){first=p;p.classList.add("selected");}
+      else{
+        let tPos=first.style.backgroundPosition, tId=first.dataset.id;
+        first.style.backgroundPosition=p.style.backgroundPosition; first.dataset.id=p.dataset.id;
+        p.style.backgroundPosition=tPos; p.dataset.id=tId;
+        first.classList.remove("selected"); first=null;
+        if([...document.querySelectorAll(".piece")].every((p,i)=>p.dataset.id==i)){
+          setTimeout(()=>{document.getElementById("puzzleScreen").classList.add("hidden");showFinal();},500);
+        }
+      }
+    }
+
+    function showFinal(){
+      document.getElementById("finalScreen").classList.remove("hidden");
+      let text="Areen 💖\nYou are my today & all of my tomorrows.\nWill you stay forever?\n– Fahim ❤️", i=0, target=document.getElementById("typing");
+      function type(){if(i<text.length){target.innerHTML+=text[i]=="\n"?"<br>":text[i];i++;setTimeout(type,50);}}
+      type();
+    }
+
+    function showRing(){
+      document.getElementById("preRing").style.display="none";
+      document.getElementById("specialMsg").style.display="block";
+      setInterval(spawnSpecialHeart, 200);
+    }
+
+    function spawnSpecialHeart(){
+      let h=document.createElement("div");
+      h.className="floating";
+      h.style.left=Math.random()*100+"vw";
+      h.style.fontSize=(Math.random()*20+20)+"px";
+      h.innerHTML=["❤️","✨","💖","💍","🌸"][Math.floor(Math.random()*5)];
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(),4000);
+    }
+  </script>
 </body>
 </html>
+
+```
