@@ -12,6 +12,7 @@ body{
   text-align:center;
   overflow:hidden;
   background:#000;
+  touch-action: none;
 }
 
 .screen{
@@ -170,13 +171,14 @@ let emojis=["💖","💘","💗","💝","💕","💞"];
 let hearts=[];
 let score=0;
 let playerX=0;
+let isDragging=false;
 
 function resize(){
   canvas.width=window.innerWidth;
   canvas.height=window.innerHeight;
   fwCanvas.width=window.innerWidth;
   fwCanvas.height=window.innerHeight;
-  playerX=canvas.width/2-40;
+  if(playerX===0) playerX=canvas.width/2-40;
 }
 window.addEventListener("resize",resize);
 
@@ -245,14 +247,24 @@ function gameLoop(){
   requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener("mousemove",e=>{
-  playerX=e.clientX-40;
+// TOUCH / DRAG SUPPORT FOR PLAYER
+canvas.addEventListener("touchstart", e=>{
+  isDragging=true;
+  playerX=e.touches[0].clientX-40;
+});
+canvas.addEventListener("touchmove", e=>{
+  if(isDragging){
+    playerX=e.touches[0].clientX-40;
+  }
+});
+canvas.addEventListener("touchend", e=>{
+  isDragging=false;
 });
 
-/* ---------- 4-PIECE PUZZLE FIX ---------- */
+/* ---------- PUZZLE ---------- */
 let puzzleBoard=document.getElementById("puzzleBoard");
 let firstPiece=null;
-let puzzleOrder=[0,1,2,3]; // correct order
+let puzzleOrder=[0,1,2,3];
 
 function shuffleArray(array){
   for(let i=array.length-1;i>0;i--){
@@ -275,7 +287,11 @@ function startPuzzle(){
     div.style.backgroundPosition=(-(num%2)*160)+"px "+(-Math.floor(num/2)*160)+"px";
     div.dataset.pos=index;
     div.dataset.correct=num;
-    div.addEventListener("click",()=>selectPiece(div));
+
+    // MOBILE TOUCH SUPPORT
+    div.addEventListener("touchstart", ()=>selectPiece(div));
+    div.addEventListener("click", ()=>selectPiece(div));
+
     puzzleBoard.appendChild(div);
   });
 }
@@ -299,7 +315,6 @@ function swapPieces(a,b){
 
   [order[aPos],order[bPos]]=[order[bPos],order[aPos]];
 
-  // update dataset and positions
   a.dataset.pos=bPos;
   b.dataset.pos=aPos;
   puzzleBoard.dataset.order = order.join(",");
