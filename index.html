@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fahim ❤️ Areen - Forever Love Quest</title>
+<title>Fahim ❤️ Areen</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
-body{overflow:hidden;background:#000;color:#fff;text-align:center}
+body{
+margin:0;
+overflow:hidden;
+font-family:Arial;
+background:black;
+color:white;
+text-align:center;
+}
 
 .screen{
 position:absolute;
@@ -19,92 +25,77 @@ justify-content:center;
 align-items:center;
 }
 
-.hidden{display:none}
+.hidden{display:none;}
 
-/* Start Screen */
-#startScreen{
-background:url('couple.jpg') center/cover no-repeat;
-}
-#startOverlay{
-background:rgba(0,0,0,0.6);
-position:absolute;
-width:100%;
-height:100%;
-}
-#startContent{
-position:relative;
-z-index:2;
-}
 button{
 padding:12px 25px;
 font-size:18px;
 border:none;
-border-radius:30px;
-background:#ff4d6d;
+border-radius:25px;
+background:#ff3366;
 color:white;
 cursor:pointer;
-margin-top:20px;
 }
-button:hover{background:#ff1e4d}
 
-/* Game Canvas */
+#startScreen{
+background:url("couple.jpg") center/cover no-repeat;
+}
+
+#overlay{
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+}
+
 #gameCanvas{
-background:linear-gradient(to bottom,#ff9a9e,#fad0c4);
+background:linear-gradient(#ff9a9e,#fad0c4);
 display:block;
-margin:auto;
 }
 
-/* Puzzle */
 #puzzleBoard{
 display:grid;
 grid-template-columns:repeat(3,100px);
-grid-template-rows:repeat(3,100px);
 gap:2px;
 }
+
 .piece{
 width:100px;
 height:100px;
 background-size:300px 300px;
-cursor:pointer;
 }
 
-/* Final */
 #finalScreen{
-background:url('couple.jpg') center/cover no-repeat;
+background:url("couple.jpg") center/cover no-repeat;
 }
+
 #finalOverlay{
-background:rgba(0,0,0,0.7);
 position:absolute;
 width:100%;
 height:100%;
-}
-#loveMessage{
-position:relative;
-z-index:2;
-max-width:80%;
-font-size:22px;
+background:rgba(0,0,0,0.7);
 }
 </style>
 </head>
+
 <body>
 
-<!-- 🎵 BGM -->
+<!-- BGM -->
 <audio id="bgm" loop>
 <source src="bgm.mp3" type="audio/mpeg">
 </audio>
 
-<!-- START SCREEN -->
+<!-- START -->
 <div id="startScreen" class="screen">
-<div id="startOverlay"></div>
-<div id="startContent">
+<div id="overlay"></div>
+<div style="z-index:2">
 <h1>Fahim ❤️ Areen</h1>
-<p>Forever Love Quest</p>
 <button onclick="startGame()">Start Our Love Journey</button>
 </div>
 </div>
 
-<!-- HEART GAME -->
-<canvas id="gameCanvas" width="400" height="600" class="hidden"></canvas>
+<!-- GAME -->
+<canvas id="gameCanvas" class="hidden"></canvas>
 
 <!-- PUZZLE -->
 <div id="puzzleScreen" class="screen hidden">
@@ -115,24 +106,16 @@ font-size:22px;
 <!-- FINAL -->
 <div id="finalScreen" class="screen hidden">
 <div id="finalOverlay"></div>
-<div id="loveMessage"></div>
+<div style="z-index:2;max-width:80%">
+<h2>Areen 💖</h2>
+<p>I don't want a perfect love story.<br>
+I just want you. Forever.<br><br>
+– Fahim ❤️</p>
+</div>
 </div>
 
 <script>
 
-/* ---------- START GAME ---------- */
-function startGame(){
-document.getElementById("startScreen").classList.add("hidden");
-
-/* 🎵 Play Music After Click */
-let music=document.getElementById("bgm");
-music.volume=0.6;
-music.play().catch(()=>{});
-
-initGame();
-}
-
-/* ---------- HEART GAME ---------- */
 let canvas=document.getElementById("gameCanvas");
 let ctx=canvas.getContext("2d");
 let playerImg=new Image();
@@ -140,74 +123,101 @@ playerImg.src="fahim.png";
 
 let hearts=[];
 let score=0;
-let playerX=160;
+let playerX=0;
+let animationId;
 
-function initGame(){
+function resizeCanvas(){
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+playerX=canvas.width/2-40;
+}
+window.addEventListener("resize",resizeCanvas);
+
+function startGame(){
+document.getElementById("startScreen").classList.add("hidden");
 canvas.classList.remove("hidden");
+
+resizeCanvas();
+
+let music=document.getElementById("bgm");
+music.volume=0.6;
+music.play().catch(()=>{});
+
 score=0;
 hearts=[];
+playerImg.onload=function(){
 gameLoop();
+}
 }
 
 function spawnHeart(){
 hearts.push({
-x:Math.random()*360,
+x:Math.random()*canvas.width,
 y:-20,
-speed:2+Math.random()*2
+speed:2+Math.random()*3
 });
 }
 setInterval(spawnHeart,800);
 
 function gameLoop(){
-ctx.clearRect(0,0,400,600);
-ctx.drawImage(playerImg,playerX,520,80,80);
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-hearts.forEach((h,i)=>{
+ctx.drawImage(playerImg,playerX,canvas.height-100,80,80);
+
+for(let i=hearts.length-1;i>=0;i--){
+let h=hearts[i];
 h.y+=h.speed;
+
 ctx.fillStyle="red";
 ctx.beginPath();
 ctx.arc(h.x,h.y,10,0,Math.PI*2);
 ctx.fill();
 
-if(h.y>520 && h.x>playerX && h.x<playerX+80){
+if(h.y>canvas.height-100 && 
+h.x>playerX && 
+h.x<playerX+80){
 score++;
 hearts.splice(i,1);
 }
 
-if(h.y>600) hearts.splice(i,1);
-});
+if(h.y>canvas.height){
+hearts.splice(i,1);
+}
+}
 
-ctx.fillStyle="#000";
+ctx.fillStyle="black";
 ctx.font="20px Arial";
-ctx.fillText("Score: "+score,10,30);
+ctx.fillText("Score: "+score,20,30);
 
 if(score>=10){
+cancelAnimationFrame(animationId);
 canvas.classList.add("hidden");
 startPuzzle();
 return;
 }
 
-requestAnimationFrame(gameLoop);
+animationId=requestAnimationFrame(gameLoop);
 }
 
 document.addEventListener("mousemove",e=>{
 playerX=e.clientX-40;
 if(playerX<0)playerX=0;
-if(playerX>320)playerX=320;
+if(playerX>canvas.width-80)playerX=canvas.width-80;
 });
 
 document.addEventListener("touchmove",e=>{
 playerX=e.touches[0].clientX-40;
 if(playerX<0)playerX=0;
-if(playerX>320)playerX=320;
+if(playerX>canvas.width-80)playerX=canvas.width-80;
 });
 
-/* ---------- PUZZLE ---------- */
+/* PUZZLE */
 
 function startPuzzle(){
 document.getElementById("puzzleScreen").classList.remove("hidden");
 let board=document.getElementById("puzzleBoard");
 board.innerHTML="";
+
 let positions=[0,1,2,3,4,5,6,7,8];
 positions.sort(()=>Math.random()-0.5);
 
@@ -220,34 +230,13 @@ piece.style.backgroundPosition=
 board.appendChild(piece);
 });
 
-board.addEventListener("click",()=>{
-startFinal();
-},{once:true});
-}
-
-/* ---------- FINAL ---------- */
-
-function startFinal(){
+board.onclick=function(){
 document.getElementById("puzzleScreen").classList.add("hidden");
 document.getElementById("finalScreen").classList.remove("hidden");
-
-let message=`Areen 💖<br><br>
-Every moment with you is my favorite memory.<br>
-I don’t want a perfect love story...<br>
-I just want you. Forever.<br><br>
-– Fahim ❤️`;
-
-let container=document.getElementById("loveMessage");
-let i=0;
-let txt="";
-let interval=setInterval(()=>{
-txt+=message[i];
-container.innerHTML=txt;
-i++;
-if(i>=message.length)clearInterval(interval);
-},40);
+}
 }
 
 </script>
+
 </body>
 </html>
